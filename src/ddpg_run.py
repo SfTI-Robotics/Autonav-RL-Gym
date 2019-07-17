@@ -105,7 +105,7 @@ ACTION_W_MAX = 2 # rad/s
 actor = Actor(STATE_DIMENSION, ACTION_DIMENSION, ACTION_V_MAX, ACTION_W_MAX)
        
 def load_models(episode):
-	actor.load_state_dict(torch.load(dirPath + '/Models/real1/'+str(episode)+ '_actor.pt'))
+	actor.load_state_dict(torch.load(dirPath + '/Models/trained/'+str(episode)+ '_actor.pt'))
 	print('***Models load***')
 def get_action(state):
         state = torch.from_numpy(state)

@@ -238,13 +238,13 @@ class Trainer:
         soft_update(self.target_critic, self.critic, TAU)
     
     def save_models(self, episode_count):
-        torch.save(self.target_actor.state_dict(), dirPath +'/Models/real1/'+str(episode_count)+ '_actor.pt')
-        torch.save(self.target_critic.state_dict(), dirPath + '/Models/real1/'+str(episode_count)+ '_critic.pt')
+        torch.save(self.target_actor.state_dict(), dirPath +'/Models/training/'+str(episode_count)+ '_actor.pt')
+        torch.save(self.target_critic.state_dict(), dirPath + '/Models/training/'+str(episode_count)+ '_critic.pt')
         print('****Models saved***')
         
     def load_models(self, episode):
-        self.actor.load_state_dict(torch.load(dirPath + '/Models/real1/'+str(episode)+ '_actor.pt'))
-        self.critic.load_state_dict(torch.load(dirPath + '/Models/real1/'+str(episode)+ '_critic.pt'))
+        self.actor.load_state_dict(torch.load(dirPath + '/Models/training/'+str(episode)+ '_actor.pt'))
+        self.critic.load_state_dict(torch.load(dirPath + '/Models/training/'+str(episode)+ '_critic.pt'))
         hard_update(self.target_actor, self.actor)
         hard_update(self.target_critic, self.critic)
         print('***Models load***')
