@@ -1,0 +1,4 @@
+<launch>
+	<arg name="stage" default="3"/>
+	<node pkg="project"  type="moving_obstacle.py" name="moving_obstacle" output="screen" />
+</launch>

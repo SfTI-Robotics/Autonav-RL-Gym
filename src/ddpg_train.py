@@ -3,20 +3,17 @@
 
 import rospy
 import os
-import json
 import numpy as np
 import random
 import time
 import sys
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
-from collections import deque
 from std_msgs.msg import Float32
-from environment_stage_1 import Env
+from env.environment import Env
 import torch
 import torch.nn.functional as F
 import gc
 import torch.nn as nn
-import math
 from collections import deque
 
 #---Directory Path---#
@@ -31,27 +28,6 @@ def hard_update(target,source):
     for target_param, param in zip(target.parameters(), source.parameters()):
         target_param.data.copy_(param.data)
 
-#---Ornstein-Uhlenbeck Noise for action---#
-
-class ActionNoise:
-    # Based on http://math.stackexchange.com/questions/1287634/implementing-ornstein-uhlenbeck-in-matlab
-    def __init__(self, action_dim, mu=0, theta=0.15, sigma=0.2):
-        self.action_dim = action_dim
-        self.mu = mu
-        self.theta = theta
-        self.sigma = sigma
-        self.X = np.ones(self.action_dim)*self.mu
-        
-    def reset(self):
-        self.X = np.ones(self.action_dim)*self.mu
-    
-    def sample(self):
-        dx = self.theta*(self.mu - self.X)
-        dx = dx + self.sigma*np.random.randn(len(self.X))
-        self.X = self.X + dx
-        print('aqu2i' + str(self.X))
-        return self.X
-
 #---Critic--#
 
 EPS = 0.003
@@ -59,6 +35,7 @@ def fanin_init(size, fanin=None):
     fanin = fanin or size[0]
     v = 1./np.sqrt(fanin)
     return torch.Tensor(size).uniform_(-v,v)
+
 
 class Critic(nn.Module):
     def __init__(self, state_dim, action_dim):
@@ -165,8 +142,7 @@ class Trainer:
         self.action_limit_w = action_limit_w
         #print('w',self.action_limit_w)
         self.ram = ram
-        #self.iter = 0 
-        self.noise = ActionNoise(self.action_dim)
+        #self.iter = 0
         
         self.actor = Actor(self.state_dim, self.action_dim, self.action_limit_v, self.action_limit_w)
         self.target_actor = Actor(self.state_dim, self.action_dim, self.action_limit_v, self.action_limit_w)

@@ -3,21 +3,12 @@
 
 import rospy
 import os
-import json
 import numpy as np
-import random
-import time
 import sys
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
-from collections import deque
-from std_msgs.msg import Float32
-from environment_stage_1 import Env
+from env.environment import Env
 import torch
-import torch.nn.functional as F
-import gc
 import torch.nn as nn
-import math
-from collections import deque
 
 #---Directory Path---#
 dirPath = os.path.dirname(os.path.realpath(__file__))
@@ -123,12 +114,14 @@ if __name__ == '__main__':
     state = env.reset()
     past_action = np.array([0.,0.])
     while True:        
-	state = np.float32(state)
-    	action = get_action(state)
+        state = np.float32(state)
+        action = get_action(state)
 
-    	next_state, reward, done = env.step(action, past_action)
-    	past_action = action
+        print(action)
 
-    	state = next_state	    
+        next_state, reward, done = env.step(action, past_action)
+        past_action = action
+
+        state = next_state
 
 

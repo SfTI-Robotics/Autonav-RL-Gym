@@ -24,11 +24,12 @@ import os
 from gazebo_msgs.srv import SpawnModel, DeleteModel
 from gazebo_msgs.msg import ModelStates
 from geometry_msgs.msg import Pose
+from std_srvs.srv import Empty
 
 class Respawn():
     def __init__(self):
         self.modelPath = os.path.dirname(os.path.realpath(__file__))
-        self.modelPath = self.modelPath.replace('project/src',
+        self.modelPath = self.modelPath.replace('turtlebot3_ddpg/src/world',
                                                 'turtlebot3_simulations/turtlebot3_gazebo/models/turtlebot3_square/goal_box/model.sdf')
         self.f = open(self.modelPath, 'r')
         self.model = self.f.read()
@@ -49,6 +50,8 @@ class Respawn():
         self.sub_model = rospy.Subscriber('gazebo/model_states', ModelStates, self.checkModel)
         self.check_model = False
         self.index = 0
+        self.unpause_proxy = rospy.ServiceProxy('gazebo/unpause_physics', Empty)
+        self.pause_proxy = rospy.ServiceProxy('gazebo/pause_physics', Empty)
 
     def checkModel(self, model):
         self.check_model = False
@@ -73,15 +76,20 @@ class Respawn():
             if self.check_model:
                 rospy.wait_for_service('gazebo/delete_model')
                 del_model_prox = rospy.ServiceProxy('gazebo/delete_model', DeleteModel)
-                del_model_prox(self.modelName)
+                resp = del_model_prox(str(self.modelName))
+                print resp
                 break
             else:
                 pass
 
     def getPosition(self, position_check=False, delete=False):
+        print "delete"
+  
         if delete:
+            self.pause_proxy()
             self.deleteModel()
-
+            self.unpause_proxy()
+        print "delete success"
         if self.stage != 4:
             while position_check:
                 goal_x = random.randrange(-12, 13) / 10.0
@@ -121,7 +129,7 @@ class Respawn():
                 self.goal_position.position.x = goal_x_list[self.index]
                 self.goal_position.position.y = goal_y_list[self.index]
 
-        time.sleep(0.5)
+        #time.sleep(0.5)
         self.respawnModel()
 
         self.last_goal_x = self.goal_position.position.x
