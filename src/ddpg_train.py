@@ -229,9 +229,9 @@ class Trainer:
 
 is_training = True
 
-is_loading = True
+is_loading = False
 
-load_ep = 2950
+load_ep = 0
 
 if is_training:
     exploration_rate = 1
@@ -347,6 +347,7 @@ if __name__ == '__main__':
 
             if done or step == MAX_STEPS-1:
                 print('reward per ep: ' + str(rewards_current_episode))
+		print('ram size:' + str(ram.len))
                 print('explore_v: ' + str(var_v) + ' and explore_w: ' + str(var_w))
                 rewards_all_episodes.append(rewards_current_episode)
                 result = rewards_current_episode

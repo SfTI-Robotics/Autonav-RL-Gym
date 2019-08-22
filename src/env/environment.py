@@ -28,6 +28,7 @@ from std_srvs.srv import Empty
 from tf.transformations import euler_from_quaternion
 from world.respawnGoal import Respawn
 
+
 class Env():
     def __init__(self):
         self.record_goals = 0
@@ -114,24 +115,21 @@ class Env():
 
 
         distance_rate = (self.past_distance - current_distance) 
-        #if distance_rate > 0:
-         #   reward = 200.*distance_rate
-        #if distance_rate == 0:
-        #    reward = -10.
-        #if distance_rate <= 0:
-        #    reward = -8.
+	reward = -1
+        if distance_rate <= 0:
+            reward = -1
         #angle_reward = math.pi - abs(heading)
         #print('d', 500*distance_rate)
-        #reward = 500.*distance_rate #+ 3.*angle_reward
+        #reward = 400.*distance_rate #+ 3.*angle_reward
         self.past_distance = current_distance
-        reward = 0
+        #reward = 0
         if done:
             rospy.loginfo("Collision!!")
             rospy.loginfo("record = " + str(self.record_goals))
             if self.record_goals < self.sequential_goals:
                 self.record_goals = self.sequential_goals
             self.sequential_goals = 0
-            reward = -550.
+            reward = -100.
             self.pub_cmd_vel.publish(Twist())
 
         if self.get_goalbox:
@@ -141,7 +139,7 @@ class Env():
                 self.record_goals = self.sequential_goals
             rospy.loginfo("current = " + str(self.sequential_goals))
             rospy.loginfo("record = " + str(self.record_goals))
-            reward = 500.
+            reward = 1000.
             self.pub_cmd_vel.publish(Twist())
             self.goal_x, self.goal_y = self.respawn_goal.getPosition(True, delete=True)
             self.goal_distance = self.getGoalDistace()
@@ -172,23 +170,21 @@ class Env():
         return np.asarray(state), reward, done
 
     def reset(self):
-        print "reset"
+
         rospy.wait_for_service('gazebo/reset_simulation')
-        print "waited sim"
+ 
         try:
             self.reset_proxy()
         except (rospy.ServiceException) as e:
             print("gazebo/reset_simulation service call failed")
-        print "reset sim"
         data = None
-        print "wait for scan"
+ 
         while data is None:
             try:
                 data = rospy.wait_for_message('scan', LaserScan, timeout=5)
             except:
                 print "scan failed"
                 pass
-        print "scanned"
         if self.initGoal:
             self.goal_x, self.goal_y = self.respawn_goal.getPosition()
             self.initGoal = False
@@ -197,5 +193,4 @@ class Env():
 
         self.goal_distance = self.getGoalDistace()
         state, done = self.getState(data, [0.,0.])
-        print "reset success"
         return np.asarray(state)

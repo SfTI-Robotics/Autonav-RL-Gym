@@ -25,6 +25,8 @@ from gazebo_msgs.srv import SpawnModel, DeleteModel
 from gazebo_msgs.msg import ModelStates
 from geometry_msgs.msg import Pose
 from std_srvs.srv import Empty
+from gazebo_msgs.srv import SetModelState
+from gazebo_msgs.msg import ModelState 
 
 class Respawn():
     def __init__(self):
@@ -37,8 +39,10 @@ class Respawn():
         self.goal_position = Pose()
         self.init_goal_x = 0.6
         self.init_goal_y = 0.0
+	self.init_goal_z = 0.0
         self.goal_position.position.x = self.init_goal_x
         self.goal_position.position.y = self.init_goal_y
+	self.goal_position.position.z = self.init_goal_z
         self.modelName = 'goal'
         self.obstacle_1 = 0.6, 0.6
         self.obstacle_2 = 0.6, -0.6
@@ -50,8 +54,10 @@ class Respawn():
         self.sub_model = rospy.Subscriber('gazebo/model_states', ModelStates, self.checkModel)
         self.check_model = False
         self.index = 0
+	self.pub_model = rospy.Publisher('gazebo/set_model_state', ModelState, queue_size = 1)
         self.unpause_proxy = rospy.ServiceProxy('gazebo/unpause_physics', Empty)
         self.pause_proxy = rospy.ServiceProxy('gazebo/pause_physics', Empty)
+	self.respawnModel()
 
     def checkModel(self, model):
         self.check_model = False
@@ -72,24 +78,22 @@ class Respawn():
                 pass
 
     def deleteModel(self):
+	print("delete")
         while True:
             if self.check_model:
                 rospy.wait_for_service('gazebo/delete_model')
                 del_model_prox = rospy.ServiceProxy('gazebo/delete_model', DeleteModel)
                 resp = del_model_prox(str(self.modelName))
-                print resp
+		print("deleted")
                 break
             else:
                 pass
 
-    def getPosition(self, position_check=False, delete=False):
-        print "delete"
-  
-        if delete:
-            self.pause_proxy()
-            self.deleteModel()
-            self.unpause_proxy()
-        print "delete success"
+    def getPosition(self, position_check=False, delete=False):  
+        #if delete:
+        #    self.pause_proxy()
+        #    self.deleteModel()
+        #    self.unpause_proxy()
         if self.stage != 4:
             while position_check:
                 goal_x = random.randrange(-12, 13) / 10.0
@@ -128,9 +132,18 @@ class Respawn():
 
                 self.goal_position.position.x = goal_x_list[self.index]
                 self.goal_position.position.y = goal_y_list[self.index]
+	state_msg = ModelState()
+    	state_msg.model_name = "goal"
+    	state_msg.pose = self.goal_position
+	rospy.wait_for_service('/gazebo/set_model_state')
 
-        #time.sleep(0.5)
-        self.respawnModel()
+	try:
+        	resp = self.pub_model.publish(state_msg)
+		print(resp)
+    	except rospy.ServiceException, e:
+        	print "Service call failed: %s" % e
+
+    	rospy.wait_for_service('/gazebo/set_model_state')
 
         self.last_goal_x = self.goal_position.position.x
         self.last_goal_y = self.goal_position.position.y

@@ -1,6 +1,6 @@
 <launch>
   <arg name="stage" default="3"/>
   <param name="stage_number"  value="$(arg stage)"/>
-  <node pkg="project" type="ddpg_run.py" name="ddpg_run" output="screen" />
+  <node pkg="project" type="ddpg_train.py" name="ddpg_train" output="screen" />
   <node pkg="project"  type="moving_obstacle.py" name="moving_obstacle" output="screen" />
 </launch>
