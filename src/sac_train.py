@@ -21,13 +21,13 @@ action_dim = 2
 state_dim = 28
 hidden_dim = 512
 ACTION_V_MIN = 0  # m/s
-ACTION_W_MIN = -2.  # rad/s
+ACTION_W_MIN = 0  # m/s
 ACTION_V_MAX = 0.22  # m/s
-ACTION_W_MAX = 2.  # rad/s
+ACTION_W_MAX = 0.22  # m/s
 
 is_training = True
 is_loading = False
-load_ep = 60
+load_ep = 0
 max_episodes = 10001
 max_steps = 400
 rewards = []

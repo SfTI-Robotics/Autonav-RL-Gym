@@ -39,7 +39,8 @@ class Env():
         self.initGoal = True
         self.get_goalbox = False
         self.position = Pose()
-        self.pub_cmd_vel = rospy.Publisher('cmd_vel', Twist, queue_size=5)
+        self.pub_cmd_vel_l = rospy.Publisher('cmd_vel_l', Twist, queue_size=5)
+        self.pub_cmd_vel_r = rospy.Publisher('cmd_vel_r', Twist, queue_size=5)
         self.sub_odom = rospy.Subscriber('odom', Odometry, self.getOdometry)
         self.reset_proxy = rospy.ServiceProxy('gazebo/reset_simulation', Empty)
         self.unpause_proxy = rospy.ServiceProxy('gazebo/unpause_physics', Empty)
@@ -52,7 +53,8 @@ class Env():
     def shutdown(self):
 
         rospy.loginfo("Stopping TurtleBot")
-        self.pub_cmd_vel.publish(Twist())
+        self.pub_cmd_vel_l.publish(Twist())
+        self.pub_cmd_vel_r.publish(Twist())
         rospy.sleep(1)
 
     def getGoalDistace(self):
@@ -130,7 +132,8 @@ class Env():
                 self.record_goals = self.sequential_goals
             self.sequential_goals = 0
             reward = -100.
-            self.pub_cmd_vel.publish(Twist())
+            self.pub_cmd_vel_l.publish(Twist())
+            self.pub_cmd_vel_r.publish(Twist())
 
         if self.get_goalbox:
             self.sequential_goals += 1
@@ -140,7 +143,8 @@ class Env():
             rospy.loginfo("current = " + str(self.sequential_goals))
             rospy.loginfo("record = " + str(self.record_goals))
             reward = 1000.
-            self.pub_cmd_vel.publish(Twist())
+            self.pub_cmd_vel_l.publish(Twist())
+            self.pub_cmd_vel_r.publish(Twist())
             self.goal_x, self.goal_y = self.respawn_goal.getPosition(True, delete=True)
             self.goal_distance = self.getGoalDistace()
             self.get_goalbox = False
@@ -149,13 +153,18 @@ class Env():
         return reward
 
     def step(self, action, past_action):
-        linear_vel = action[0]
-        ang_vel = action[1]
+        wheel_vel_l = action[0]
+        wheel_vel_r = action[1]
 
-        vel_cmd = Twist()
-        vel_cmd.linear.x = linear_vel
-        vel_cmd.angular.z = ang_vel
-        self.pub_cmd_vel.publish(vel_cmd)
+        vel_cmd_l = Twist()
+        vel_cmd_l.linear.x = wheel_vel_l
+
+        vel_cmd_r = Twist()
+        vel_cmd_r.linear.x = wheel_vel_r
+
+
+        self.pub_cmd_vel_l.publish(vel_cmd_l)
+        self.pub_cmd_vel_r.publish(vel_cmd_r)
 
         data = None
         while data is None:

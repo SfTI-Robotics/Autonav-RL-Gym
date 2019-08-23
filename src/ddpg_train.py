@@ -89,10 +89,10 @@ class Actor(nn.Module):
         action = self.fa3(x)
         if state.shape == torch.Size([self.state_dim]):
             action[0] = torch.sigmoid(action[0])*self.action_limit_v
-            action[1] = torch.tanh(action[1])*self.action_limit_w
+            action[1] = torch.sigmoid(action[1])*self.action_limit_w
         else:
             action[:,0] = torch.sigmoid(action[:,0])*self.action_limit_v
-            action[:,1] = torch.tanh(action[:,1])*self.action_limit_w
+            action[:,1] = torch.sigmoid(action[:,1])*self.action_limit_w
         return action
 
 #---Memory Buffer---#
@@ -252,11 +252,11 @@ rewards_all_episodes = []
 STATE_DIMENSION = 28
 ACTION_DIMENSION = 2
 ACTION_V_MAX = 0.22 # m/s
-ACTION_W_MAX = 2 # rad/s
+ACTION_W_MAX = 0.22 # m/s
 
 if is_training:
     var_v = ACTION_V_MAX*0.20
-    var_w = ACTION_W_MAX*2*0.20
+    var_w = ACTION_W_MAX*0.20
 else:
     var_v = ACTION_V_MAX*0.10
     var_w = ACTION_W_MAX*0.10
@@ -301,7 +301,7 @@ if __name__ == '__main__':
                 #else:
                 action = trainer.get_exploration_action(state)
                 #    #print('aa',action)
-                action[0] = np.clip(np.random.normal(action[0], var_v), 0., ACTION_V_MAX)
+                action[0] = np.clip(np.random.normal(action[0], var_v), -ACTION_V_MAX, ACTION_V_MAX)
                 action[1] = np.clip(np.random.normal(action[1], var_w), -ACTION_W_MAX, ACTION_W_MAX)
 
                 #action[0] = np.clip(action[0], 0., ACTION_V_MAX)
