@@ -135,3 +135,23 @@ In another terminal run:
 ```
 roslaunch project ddpg_stage_{number_of_stage}.launch
 ```
+
+## Run Training Environment
+
+SEE IMPORTANT SECTION ON CHANGING TURTLEBOT DEFINITION FIRST
+Open two terminals, in both run (from catkin workspace root):
+```
+source ./devel/setup.bash
+export TURTLEBOT3_MODEL=burger
+```
+
+In one terminal, run the environment:
+```
+roslaunch project training_env.launch
+```
+In the other, run the agent (either sac or dppg as the argument):
+```
+roslaunch project train_agent.launch agent:=ddpg
+```
+
+
