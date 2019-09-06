@@ -113,18 +113,13 @@ class Env():
     def setReward(self, state, done):
         current_distance = state[-1]
         heading = state[-2]
-        #print('cur:', current_distance, self.past_distance)
-
 
         distance_rate = (self.past_distance - current_distance) 
-	reward = -1
+        if distance_rate > 0:
+            reward = 200.*distance_rate
         if distance_rate <= 0:
-            reward = -1
-        #angle_reward = math.pi - abs(heading)
-        #print('d', 500*distance_rate)
-        #reward = 400.*distance_rate #+ 3.*angle_reward
+            reward = -8.
         self.past_distance = current_distance
-        #reward = 0
         if done:
             rospy.loginfo("Collision!!")
             rospy.loginfo("record = " + str(self.record_goals))
