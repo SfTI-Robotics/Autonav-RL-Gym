@@ -38,7 +38,7 @@ class Moving():
                     obstacle.twist = Twist()
                     obstacle.twist.angular.z = 0.5
                     self.pub_model.publish(obstacle)
-                    time.sleep(0.1)
+                    #time.sleep(0.1)
 
 def main():
     rospy.init_node('moving_obstacle')

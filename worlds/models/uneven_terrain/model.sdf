@@ -1,0 +1,158 @@
+<?xml version='1.0'?>
+<sdf version='1.6'>
+  <model name='uneven_terrain'>
+    <pose frame=''>0 0 0 0 -0 0</pose>
+    <link name='Wall_0'>
+      <collision name='Wall_0_Collision'>
+        <geometry>
+          <box>
+            <size>4 0.15 0.5</size>
+          </box>
+        </geometry>
+        <pose frame=''>0 0 0.25 0 -0 0</pose>
+      </collision>
+      <visual name='Wall_0_Visual'>
+        <pose frame=''>0 0 0.25 0 -0 0</pose>
+        <geometry>
+          <box>
+            <size>4 0.15 0.5</size>
+          </box>
+        </geometry>
+        <material>
+          <script>
+            <uri>file://media/materials/scripts/gazebo.material</uri>
+            <name>Gazebo/Wood</name>
+          </script>
+          <ambient>1 1 1 1</ambient>
+        </material>
+      </visual>
+      <pose frame=''>0 1.925 0 0 -0 0</pose>
+    </link>
+    <link name='Wall_2'>
+      <collision name='Wall_2_Collision'>
+        <geometry>
+          <box>
+            <size>4 0.15 0.5</size>
+          </box>
+        </geometry>
+        <pose frame=''>0 0 0.25 0 -0 0</pose>
+      </collision>
+      <visual name='Wall_2_Visual'>
+        <pose frame=''>0 0 0.25 0 -0 0</pose>
+        <geometry>
+          <box>
+            <size>4 0.15 0.5</size>
+          </box>
+        </geometry>
+        <material>
+          <script>
+            <uri>file://media/materials/scripts/gazebo.material</uri>
+            <name>Gazebo/Wood</name>
+          </script>
+          <ambient>1 1 1 1</ambient>
+        </material>
+      </visual>
+      <pose frame=''>-1.925 0 0 0 0 -1.5708</pose>
+    </link>
+    <link name='Wall_3'>
+      <collision name='Wall_3_Collision'>
+        <geometry>
+          <box>
+            <size>4 0.15 0.5</size>
+          </box>
+        </geometry>
+        <pose frame=''>0 0 0.25 0 -0 0</pose>
+      </collision>
+      <visual name='Wall_3_Visual'>
+        <pose frame=''>0 0 0.25 0 -0 0</pose>
+        <geometry>
+          <box>
+            <size>4 0.15 0.5</size>
+          </box>
+        </geometry>
+        <material>
+          <script>
+            <uri>file://media/materials/scripts/gazebo.material</uri>
+            <name>Gazebo/Wood</name>
+          </script>
+          <ambient>1 1 1 1</ambient>
+        </material>
+      </visual>
+      <pose frame=''>0 -1.925 0 0 -0 0</pose>
+    </link>
+    <link name='Wall_4'>
+      <collision name='Wall_4_Collision'>
+        <geometry>
+          <box>
+            <size>4 0.15 0.5</size>
+          </box>
+        </geometry>
+        <pose frame=''>0 0 0.25 0 -0 0</pose>
+      </collision>
+      <visual name='Wall_4_Visual'>
+        <pose frame=''>0 0 0.25 0 -0 0</pose>
+        <geometry>
+          <box>
+            <size>4 0.15 0.5</size>
+          </box>
+        </geometry>
+        <material>
+          <script>
+            <uri>file://media/materials/scripts/gazebo.material</uri>
+            <name>Gazebo/Wood</name>
+          </script>
+          <ambient>1 1 1 1</ambient>
+        </material>
+      </visual>
+      <pose frame=''>1.925 0 0 0 -0 1.5708</pose>
+    </link>
+    <link name="terrain">
+        <collision name="terrain_collision">
+          <geometry>
+            <heightmap>
+              <uri>file://media/materials/textures/heightmap_bowl.png</uri>
+              <size>4 4 0.1</size>
+              <pos>0 0 0</pos>
+            </heightmap>
+          </geometry>
+          <pose frame=''>0 0 0 0 -0 0</pose>
+        </collision>
+        <visual name="terrain_visual">
+          <geometry>
+            <heightmap>
+              <use_terrain_paging>false</use_terrain_paging>
+              <texture>
+                <diffuse>file://media/materials/textures/dirt_diffusespecular.png</diffuse>
+                <normal>file://media/materials/textures/flat_normal.png</normal>
+                <size>1</size>
+              </texture>
+              <texture>
+                <diffuse>file://media/materials/textures/grass_diffusespecular.png</diffuse>
+                <normal>file://media/materials/textures/flat_normal.png</normal>
+                <size>1</size>
+              </texture>
+              <texture>
+                <diffuse>file://media/materials/textures/fungus_diffusespecular.png</diffuse>
+                <normal>file://media/materials/textures/flat_normal.png</normal>
+                <size>1</size>
+              </texture>
+              <blend>
+                <min_height>2</min_height>
+                <fade_dist>5</fade_dist>
+              </blend>
+              <blend>
+                <min_height>4</min_height>
+                <fade_dist>5</fade_dist>
+              </blend>
+              <uri>file://media/materials/textures/heightmap_bowl.png</uri>
+              <size>4 4 0.1</size>
+              <pos>0 0 0</pos>
+            </heightmap>
+          </geometry>
+          <pose frame=''>0 0 0 0 -0 0</pose>
+        </visual>
+        <pose frame=''>0 0 0 0 -0 0</pose>
+    </link>
+    <static>1</static>
+  </model>
+</sdf>
