@@ -301,8 +301,8 @@ if __name__ == '__main__':
                 #else:
                 action = trainer.get_exploration_action(state)
                 #    #print('aa',action)
-                action[0] = np.clip(np.random.normal(action[0], var_v), -ACTION_V_MAX, ACTION_V_MAX)
-                action[1] = np.clip(np.random.normal(action[1], var_w), -ACTION_W_MAX, ACTION_W_MAX)
+                action[0] = np.clip(np.random.normal(action[0], var_v), 0, ACTION_V_MAX)
+                action[1] = np.clip(np.random.normal(action[1], var_w), 0, ACTION_W_MAX)
 
                 #action[0] = np.clip(action[0], 0., ACTION_V_MAX)
                 #action[1] = np.clip(action[1], -ACTION_W_MAX, ACTION_W_MAX)
