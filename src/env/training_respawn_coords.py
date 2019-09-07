@@ -14,17 +14,17 @@ class module_empty():
         self.bot_y = 0
 
     def genBotPos(self):
-        self.bot_x = random.uniform(-1.5, 1.5)
-        self.bot_y = random.uniform(-1.5, 1.5)
+        self.bot_x = 0
+        self.bot_y = 0
         return self.bot_x + self.model_x, self.bot_y + self.model_y
 
     def genGoalPos(self):
         too_close = True
 
         while too_close:
-            self.goal_x = random.uniform(-1.5, 1.5)
-            self.goal_y = random.uniform(-1.5, 1.5)
-            if (math.sqrt((self.goal_x - self.bot_x)**2 + (self.goal_y - self.bot_y)**2) >= 1):
+            self.goal_x = random.uniform(-0.8, 0.8)
+            self.goal_y = random.uniform(-0.8, 0.8)
+            if (math.sqrt((self.goal_x - self.bot_x)**2 + (self.goal_y - self.bot_y)**2) >= 0.3):
                 too_close = False
 
         return self.goal_x + self.model_x, self.goal_y + self.model_y
