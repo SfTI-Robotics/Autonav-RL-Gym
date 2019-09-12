@@ -60,14 +60,16 @@ if __name__ == '__main__':
     time_step = 0
 
     for ep in range(load_ep + 1, max_episodes, 1):
-	done = False
+	done = 0
+        collision_count = 0
+        goal_count = 0
+        ep_steps = 0
         state = env.reset()
         #print('Episode: ' + str(ep), 'Mem Buffer Size: ' + str(len(rollouts)))
 
-        rewards_current_episode = 0
-
         for step in range(max_timesteps):
 	    time_step += 1
+            ep_steps = ep_steps + 1
             action = ppo.select_action(state, memory)
 	    #print("actual action = " + str(action))
             state, reward, done = env.step(action, past_action)
@@ -85,8 +87,14 @@ if __name__ == '__main__':
             running_reward += reward
 	    
 
-            if done:
+            if done == 1:
+                collision_count = 1
                 break
+            if done == 2:
+                goal_count = 1
+                break
+
+        env.logEpisode(running_reward, collision_count, goal_count, ep_steps)
 	
 	# logging
         if ep % log_interval == 0:

@@ -4,6 +4,9 @@
 import rospy
 import numpy as np
 import math
+import os
+import time
+import json
 from math import pi
 from geometry_msgs.msg import Twist, Pose
 from sensor_msgs.msg import LaserScan
@@ -33,8 +36,12 @@ class Env():
         self.pause_proxy = rospy.ServiceProxy('gazebo/pause_physics', Empty)
         self.respawn_goal = Respawn()
         self.past_distance = 0.
+        self.ep_number = 0
+        self.log_file = ""
 	self.step_no = 1
 
+        self.createLog()
+        
         rospy.on_shutdown(self.shutdown)
 
     def shutdown(self):
@@ -75,7 +82,7 @@ class Env():
         scan_range = []
         heading = self.heading
         min_range = 0.16
-        done = False
+        done = 0
 
         for i in range(len(scan.ranges)):
             if scan.ranges[i] == float('Inf'):
@@ -88,7 +95,7 @@ class Env():
 	
 	
         if min_range > min(scan_range) > 0:
-            done = True
+            done = 1
 
         for pa in past_action:
             scan_range.append(pa)
@@ -173,7 +180,7 @@ class Env():
         state, done = self.getState(data, past_action)
         reward = self.setReward(state, done)
 	if self.get_goalbox:
-		done = True
+		done = 2
 		self.get_goalbox = False
 	
         return np.asarray(state), reward, done
@@ -210,3 +217,29 @@ class Env():
 	#print("past d = " + str(self.past_distance))
 
         return np.asarray(state)
+
+
+    def logEpisode(self, reward, collision_count, goal_count, step_count):
+        self.ep_number = self.ep_number + 1
+        log = {
+            "ep_number": self.ep_number,
+            "environment": self.respawn_goal.currentModuleName(),
+            "reward_for_ep": reward,
+            "steps": step_count,
+            "collision_count": collision_count,
+            "goal_count": goal_count
+        }
+        logfile = open(self.log_file, "a")
+        logfile.write(json.dumps(log))
+        logfile.close
+
+
+
+    def createLog(self):
+        logpath = os.path.dirname(os.path.realpath(__file__)) + "/training_logs"
+        self.log_file = logpath + "/" + str(int(time.time())) + ".txt"
+
+        try:
+            os.mkdir(logpath)
+        except:
+            pass

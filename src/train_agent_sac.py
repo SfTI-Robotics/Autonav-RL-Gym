@@ -53,14 +53,17 @@ if __name__ == '__main__':
     past_action = np.array([0., 0.])
 
     for ep in range(load_ep + 1, max_episodes, 1):
-        done = False
+        done = 0
         state = env.reset()
         print('Episode: ' + str(ep), 'Mem Buffer Size: ' + str(len(replay_buffer)))
+        collision_count = 0
+        goal_count = 0
+        step_count = 0
 
         rewards_current_episode = 0
 
         for step in range(max_steps):
-
+            step_count = step_count + 1
             state = np.float32(state)
 
 	    action = trainer.get_action(state)
@@ -89,9 +92,16 @@ if __name__ == '__main__':
             if (len(replay_buffer) >= 256) and is_training:
                 trainer.soft_q_update(batch_size)
             state = next_state
-            if done:
+            if done == 1:
+                collision_count = 1
                 break
+            elif done == 2:
+                goal_count = 1
+                break
+                
 	
+
+        env.logEpisode(rewards_current_episode, collision_count, goal_count, step_count)
         print('reward per ep: ' + str(rewards_current_episode))
         rewards.append(rewards_current_episode)
         result = rewards_current_episode

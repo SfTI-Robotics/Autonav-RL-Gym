@@ -1,3 +1,4 @@
 src/Models/*
 src/models_good
 /src/Models/
+/src/env/training_logs/*

@@ -249,7 +249,7 @@ MAX_STEPS = 500
 MAX_BUFFER = 100000
 rewards_all_episodes = []
 
-STATE_DIMENSION = 14
+STATE_DIMENSION = 28
 ACTION_DIMENSION = 2
 ACTION_V_MAX = 0.22 # m/s
 ACTION_W_MAX = 0.22 # m/s
@@ -279,12 +279,16 @@ if __name__ == '__main__':
     past_action = np.array([0.,0.])
 
     for ep in range(load_ep, MAX_EPISODES, 1):
-        done = False
+        done = 0
+        collision_count = 0
+        goal_count = 0
+        step_count = 0
         state = env.reset()
         print('Episode: ' + str(ep))
 
         rewards_current_episode = 0
         for step in range(MAX_STEPS):
+            step_count = step_count + 1
             #print(step)
             state = np.float32(state)
             #action = trainer.get_exploration_action(state)
@@ -359,6 +363,11 @@ if __name__ == '__main__':
         exploration_rate = (min_exploration_rate +
                 (max_exploration_rate - min_exploration_rate)* np.exp(-exploration_decay_rate*ep))
         gc.collect()
+        if done == 1:
+            collision_count = 1
+        elif done == 2:
+            goal_count = 1
+        env.logEpisode(rewards_current_episode, collision_count, goal_count, step_count)
         #print('exp:', exploration_rate)
         if ep%50 == 0:
             trainer.save_models(ep)
