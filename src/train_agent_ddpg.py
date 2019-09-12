@@ -245,11 +245,11 @@ else:
 exploration_decay_rate = 0.001
 
 MAX_EPISODES = 10001
-MAX_STEPS = 200
+MAX_STEPS = 500
 MAX_BUFFER = 100000
 rewards_all_episodes = []
 
-STATE_DIMENSION = 28
+STATE_DIMENSION = 14
 ACTION_DIMENSION = 2
 ACTION_V_MAX = 0.22 # m/s
 ACTION_W_MAX = 0.22 # m/s
@@ -328,6 +328,7 @@ if __name__ == '__main__':
             next_state = np.float32(next_state)
             ram.add(state, action, reward, next_state)
             state = next_state
+	   # print("Reward = " + str(reward))
             
             #action = np.array([np.random.uniform(0.,0.15), np.random.uniform(-0.5, 0.5)])
             #print('r: ' + str(reward) + ' and done: ' + str(done))
@@ -337,7 +338,7 @@ if __name__ == '__main__':
 		for i in range(1000):
 		    trainer.optimizer()
 
-            if (ram.len >= 4000 or (is_loading and ram.len >= 1000)) and is_training:
+            if (ram.len >= 500 or (is_loading and ram.len >= 500)) and is_training:
                 var_v = max([var_v*0.99999, 0.10*ACTION_V_MAX])
                 var_w = max([var_w*0.99999, 0.10*ACTION_W_MAX])
 		#print("train")

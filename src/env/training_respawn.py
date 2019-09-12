@@ -22,12 +22,12 @@ class Respawn():
         # Tracking current module being trained in
         self.modules = [
             module_empty(), 
-            module_move_away(),
+            #module_move_away(),
             module_left_right(),
             module_round_obstacle(),
             module_static_obstacles(),
             module_moving_obstacles(),
-            module_gate()
+            #module_gate()
             ]
         self.module_index = -1
         self.pub_module = rospy.Publisher('current_module', String, queue_size = 1)
@@ -80,8 +80,9 @@ class Respawn():
                 pass
 
     # Reposition goal and bot in new positions in next module
-    def moduleRespawns(self):
-        self.nextModule()
+    def moduleRespawns(self, next_env=False):
+	if next_env:
+        	self.nextModule()
         self.repositionBot()
         return self.repositionGoal()
 

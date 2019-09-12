@@ -14,12 +14,12 @@ class ValueNetwork(nn.Module):
         self.linear2 = nn.Linear(hidden_dim, hidden_dim)
         self.linear3 = nn.Linear(hidden_dim, 1)
 
-        self.linear1.weight.data.uniform_(-init_w, init_w)
-        self.linear1.bias.data.uniform_(-init_w, init_w)
+        #self.linear1.weight.data.uniform_(-init_w, init_w)
+        #self.linear1.bias.data.uniform_(-init_w, init_w)
 	self.linear1.cuda()	
 
-        self.linear2.weight.data.uniform_(-init_w, init_w)
-        self.linear2.bias.data.uniform_(-init_w, init_w)
+        #self.linear2.weight.data.uniform_(-init_w, init_w)
+        #self.linear2.bias.data.uniform_(-init_w, init_w)
 	self.linear2.cuda()
 
         self.linear3.weight.data.uniform_(-init_w, init_w)
@@ -75,12 +75,12 @@ class SoftQNetwork(nn.Module):
         self.linear2 = nn.Linear(hidden_size, hidden_size)
         self.linear3 = nn.Linear(hidden_size, 1)
 
-        self.linear1.weight.data.uniform_(-init_w, init_w)
-        self.linear1.bias.data.uniform_(-init_w, init_w)
+        #self.linear1.weight.data.uniform_(-init_w, init_w)
+        #self.linear1.bias.data.uniform_(-init_w, init_w)
 	self.linear1.cuda()
 	
-        self.linear2.weight.data.uniform_(-init_w, init_w)
-        self.linear2.bias.data.uniform_(-init_w, init_w)
+        #self.linear2.weight.data.uniform_(-init_w, init_w)
+        #self.linear2.bias.data.uniform_(-init_w, init_w)
 	self.linear2.cuda()	
 
         self.linear3.weight.data.uniform_(-init_w, init_w)
@@ -96,20 +96,20 @@ class SoftQNetwork(nn.Module):
 
 
 class PolicyNetwork(nn.Module):
-    def __init__(self, num_inputs, num_actions, hidden_size, init_w=3e-3, log_std_min=-10, log_std_max=2):
+    def __init__(self, num_inputs, num_actions, hidden_size, init_w=3e-3, log_std_min=-20, log_std_max=2):
         super(PolicyNetwork, self).__init__()
 
         self.log_std_min = log_std_min
         self.log_std_max = log_std_max
 
         self.linear1 = nn.Linear(num_inputs, hidden_size)
-        self.linear1.weight.data.uniform_(-init_w, init_w)
-        self.linear1.bias.data.uniform_(-init_w, init_w)
+        #self.linear1.weight.data.uniform_(-init_w, init_w)
+       # self.linear1.bias.data.uniform_(-init_w, init_w)
 	self.linear1.cuda()
 
         self.linear2 = nn.Linear(hidden_size, hidden_size)
-        self.linear2.weight.data.uniform_(-init_w, init_w)
-        self.linear2.bias.data.uniform_(-init_w, init_w)
+        #self.linear2.weight.data.uniform_(-init_w, init_w)
+        #self.linear2.bias.data.uniform_(-init_w, init_w)
 	self.linear2.cuda()
 
         self.mean_linear = nn.Linear(hidden_size, num_actions)
@@ -125,38 +125,43 @@ class PolicyNetwork(nn.Module):
     def forward(self, state):
         x = F.relu(self.linear1(state))
         x = F.relu(self.linear2(x))
-
-        mean = self.mean_linear(x)
+        
+        mean    = self.mean_linear(x)
         log_std = self.log_std_linear(x)
         log_std = torch.clamp(log_std, self.log_std_min, self.log_std_max)
-
+        
         return mean, log_std
-
+    
     def evaluate(self, state, epsilon=1e-6):
         mean, log_std = self.forward(state)
         std = log_std.exp()
-
+        
         normal = Normal(mean, std)
-        z = normal.sample()
+        z = normal.rsample()
         action = torch.tanh(z)
-
+        
         log_prob = normal.log_prob(z) - torch.log(1 - action.pow(2) + epsilon)
-        log_prob = log_prob.sum(-1, keepdim=True)
-
+        log_prob = log_prob.sum(1, keepdim=True)
+        
         return action, log_prob, z, mean, log_std
-
+        
+    
     def get_action(self, state):
         state = torch.cuda.FloatTensor(state).unsqueeze(0)
         mean, log_std = self.forward(state)
         std = log_std.exp()
-
+        
         normal = Normal(mean, std)
-        z = normal.sample()
+        z      = normal.rsample()
         action = torch.tanh(z)
-        # action = z.detach().numpy()
-
+        #action = z.detach().numpy()
+        
         action = action.detach().cpu().numpy()
         return action[0]
+
+
+
+
 
 
 class Trainer:
@@ -168,19 +173,22 @@ class Trainer:
         self.w_max = w_max
 
 	
-	self.curiosity_net = Curiosity(state_dim, action_dim, 512)
+	self.curiosity_net = Curiosity(state_dim, action_dim, 256)
 	self.curiosity_net.cuda()
 
-        self.value_net = ValueNetwork(state_dim, 512)
+        self.value_net = ValueNetwork(state_dim, 256)
 	self.value_net.cuda()
 
-        self.target_value_net = ValueNetwork(state_dim, 512)
+        self.target_value_net = ValueNetwork(state_dim, 256)
 	self.target_value_net.cuda()
 
-        self.soft_q_net = SoftQNetwork(state_dim, action_dim, 512)
-	self.soft_q_net.cuda()
+        self.soft_q_net_1 = SoftQNetwork(state_dim, action_dim, 256)
+	self.soft_q_net_1.cuda()
 
-        self.policy_net = PolicyNetwork(state_dim, action_dim, 512)
+	self.soft_q_net_2 = SoftQNetwork(state_dim, action_dim, 256)
+	self.soft_q_net_2.cuda()
+
+        self.policy_net = PolicyNetwork(state_dim, action_dim, 256)
 	self.policy_net.cuda()
 
         for target_param, param in zip(self.target_value_net.parameters(), self.value_net.parameters()):
@@ -188,7 +196,8 @@ class Trainer:
 
 	self.curiosity_criterion = nn.MSELoss()
         self.value_criterion = nn.MSELoss()
-        self.soft_q_criterion = nn.MSELoss()
+        self.soft_q_criterion_1 = nn.MSELoss()
+	self.soft_q_criterion_2 = nn.MSELoss()
 
         value_lr = 3e-4
         soft_q_lr = 3e-4
@@ -196,7 +205,8 @@ class Trainer:
 
 	self.curiosity_optimizer = optim.Adam(self.curiosity_net.parameters(), lr=value_lr)
         self.value_optimizer = optim.Adam(self.value_net.parameters(), lr=value_lr)
-        self.soft_q_optimizer = optim.Adam(self.soft_q_net.parameters(), lr=soft_q_lr)
+        self.soft_q_optimizer_1 = optim.Adam(self.soft_q_net_1.parameters(), lr=soft_q_lr)
+	self.soft_q_optimizer_2 = optim.Adam(self.soft_q_net_2.parameters(), lr=soft_q_lr)
         self.policy_optimizer = optim.Adam(self.policy_net.parameters(), lr=policy_lr)
 
         self.replay_buffer = ram
@@ -209,7 +219,8 @@ class Trainer:
  	torch.save(self.curiosity_net.state_dict(), self.savePath + '/Models/sac/' + str(episode_count) + '_curiosity_net.pth')
         torch.save(self.policy_net.state_dict(), self.savePath + '/Models/sac/' + str(episode_count) + '_policy_net.pth')
         torch.save(self.value_net.state_dict(), self.savePath + '/Models/sac/' + str(episode_count) + 'value_net.pth')
-        torch.save(self.soft_q_net.state_dict(), self.savePath + '/Models/sac/' + str(episode_count) + 'soft_q_net.pth')
+        torch.save(self.soft_q_net_1.state_dict(), self.savePath + '/Models/sac/' + str(episode_count) + 'soft_q_net_1.pth')
+	torch.save(self.soft_q_net_2.state_dict(), self.savePath + '/Models/sac/' + str(episode_count) + 'soft_q_net_2.pth')
         torch.save(self.target_value_net.state_dict(),
                    self.savePath + '/Models/sac/' + str(episode_count) + 'target_value_net.pth')
         print("====================================")
@@ -220,7 +231,8 @@ class Trainer:
 	self.curiosity_net.load_state_dict(torch.load(self.savePath + '/Models/sac/' + str(episode) + '_curiosity_net.pth'))
         self.policy_net.load_state_dict(torch.load(self.savePath + '/Models/sac/' + str(episode) + '_policy_net.pth'))
         self.value_net.load_state_dict(torch.load(self.savePath + '/Models/sac/' + str(episode) + 'value_net.pth'))
-        self.soft_q_net.load_state_dict(torch.load(self.savePath + '/Models/sac/' + str(episode) + 'soft_q_net.pth'))
+        self.soft_q_net_1.load_state_dict(torch.load(self.savePath + '/Models/sac/' + str(episode) + 'soft_q_net_1.pth'))
+	self.soft_q_net_2.load_state_dict(torch.load(self.savePath + '/Models/sac/' + str(episode) + 'soft_q_net_2.pth'))
         self.target_value_net.load_state_dict(torch.load(self.savePath + '/Models/sac/' + str(episode) + 'target_value_net.pth'))
         print('***Models load***')
 
@@ -246,9 +258,9 @@ class Trainer:
 
     def soft_q_update(self, batch_size,
                       gamma=0.99,
-                      mean_lambda=1e-3,
-                      std_lambda=1e-3,
-                      z_lambda=0.0,
+                      mean_lambda=3e-4,
+                      std_lambda=3e-4,
+                      z_lambda=3e-4,
                       soft_tau=1e-2,
                       ):
         state, action, reward, next_state, done = self.replay_buffer.sample(batch_size)
@@ -260,33 +272,44 @@ class Trainer:
         done = torch.cuda.FloatTensor(np.float32(done)).unsqueeze(1)
         # print('done', done)
 
-        expected_q_value = self.soft_q_net(state, action)
+        expected_q_value_1 = self.soft_q_net_1(state, action)
+	expected_q_value_2 = self.soft_q_net_2(state, action)
         expected_value = self.value_net(state)
         new_action, log_prob, z, mean, log_std = self.policy_net.evaluate(state)
 
         target_value = self.target_value_net(next_state)
         next_q_value = reward + (1 - done) * gamma * target_value
-        q_value_loss = self.soft_q_criterion(expected_q_value, next_q_value.detach())
+        q_value_loss_1 = self.soft_q_criterion_1(expected_q_value_1, next_q_value.detach())
+	q_value_loss_2 = self.soft_q_criterion_2(expected_q_value_2, next_q_value.detach())
 	
 	pred_state = self.curiosity_net(state, action)
 	curiosity_loss = self.curiosity_criterion(pred_state, next_state)	
+	
+	# optimise soft q first
+        self.soft_q_optimizer_1.zero_grad()
+        q_value_loss_1.backward()
+        self.soft_q_optimizer_1.step()
 
-        expected_new_q_value = self.soft_q_net(state, new_action)
+	self.soft_q_optimizer_2.zero_grad()
+        q_value_loss_2.backward()
+        self.soft_q_optimizer_2.step()
+
+        expected_new_q_value_1 = self.soft_q_net_1(state, new_action)
+	expected_new_q_value_2 = self.soft_q_net_2(state, new_action)
+	expected_new_q_value = torch.min(expected_new_q_value_1, expected_new_q_value_2)
+
         next_value = expected_new_q_value - log_prob
         value_loss = self.value_criterion(expected_value, next_value.detach())
 
         log_prob_target = expected_new_q_value - expected_value
-        policy_loss = (log_prob * (log_prob - log_prob_target).detach()).mean()
+        #policy_loss = (log_prob * (log_prob - log_prob_target).detach()).mean()
 
-        mean_loss = mean_lambda * mean.pow(2).mean()
-        std_loss = std_lambda * log_std.pow(2).mean()
-        z_loss = z_lambda * z.pow(2).sum(1).mean()
+        #mean_loss = mean_lambda * mean.pow(2).mean()
+        #std_loss = std_lambda * log_std.pow(2).mean()
+        #z_loss = z_lambda * z.pow(2).sum(1).mean()
 
-        policy_loss += mean_loss + std_loss + z_loss
+        policy_loss = (log_prob - expected_new_q_value).mean()
 
-        self.soft_q_optimizer.zero_grad()
-        q_value_loss.backward()
-        self.soft_q_optimizer.step()
 
         self.value_optimizer.zero_grad()
         value_loss.backward()
