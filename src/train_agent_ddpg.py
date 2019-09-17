@@ -274,7 +274,7 @@ if __name__ == '__main__':
     rospy.init_node('ddpg_stage_1')
     pub_result = rospy.Publisher('result', Float32, queue_size=5)
     result = Float32()
-    env = Env()
+    env = Env("DDPG")
     start_time = time.time()
     past_action = np.array([0.,0.])
 

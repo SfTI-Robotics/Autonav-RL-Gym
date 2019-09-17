@@ -18,7 +18,8 @@ from math import e
 
 
 class Env():
-    def __init__(self):
+    def __init__(self, agent_type):
+        self.agent_type = agent_type
         self.envs_list = {}
         self.record_goals = 0
         self.sequential_goals = 0
@@ -230,16 +231,22 @@ class Env():
             "goal_count": goal_count
         }
         logfile = open(self.log_file, "a")
-        logfile.write(json.dumps(log))
+        logfile.write(json.dumps(log) + "\n")
         logfile.close
 
 
 
     def createLog(self):
         logpath = os.path.dirname(os.path.realpath(__file__)) + "/training_logs"
-        self.log_file = logpath + "/" + str(int(time.time())) + ".txt"
+        self.log_file = logpath + "/" + self.agent_type + "-" + str(int(time.time())) + ".txt"
+
 
         try:
             os.mkdir(logpath)
         except:
             pass
+
+        logfile = open(self.log_file, "a")
+        logfile.close
+
+        
