@@ -89,6 +89,14 @@ class PPO:
 	#return action
 	#print("action = " + str(action))
 	return self.actions[action]
+
+    def save_models(self, episode_count):
+ 	torch.save(self.policy.state_dict(), self.savePath + '/Models/ppo/' + str(episode_count) + '_policy.pth')
+	torch.save(self.policy_old.state_dict(), self.savePath + '/Models/ppo/' + str(episode_count) + '_policy_old.pth')
+
+    def load_models(self, episode):
+	self.policy.load_state_dict(torch.load(self.savePath + '/Models/ppo/' + str(episode) + 'policy.pth'))
+	self.policy_old.load_state_dict(torch.load(self.savePath + '/Models/ppo/' + str(episode) + 'policy_old.pth'))
     
     def update(self, memory):   
         # Monte Carlo estimate of state rewards:
