@@ -108,7 +108,8 @@ if __name__ == '__main__':
         if ep % log_interval == 0:
             running_reward = int((running_reward/log_interval))
             print('Ep {}\tMoving average score: {:.2f} Ep score: {:.2f}\t'.format(ep, running_reward, score))
-	    print('Timestep {}'.format(time_step))
+	    print('Timestep {}'.format(time_step))	     
+            ppo.save_models(ep)
 	    
 
 	    
