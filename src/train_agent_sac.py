@@ -98,10 +98,10 @@ if __name__ == '__main__':
             elif done == 2:
                 goal_count = 1
                 break
-                
-	
+
 
         env.logEpisode(rewards_current_episode, collision_count, goal_count, step_count)
+
         print('reward per ep: ' + str(rewards_current_episode))
         rewards.append(rewards_current_episode)
         result = rewards_current_episode
