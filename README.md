@@ -155,3 +155,21 @@ roslaunch project train_agent.launch agent:=ddpg
 ```
 
 
+## Logging
+Install logstash, elasticsearch, kibana
+
+Run the logstash pipeline from the root of this repo before running the turtlebot agent:
+```
+/path/to/logstash -f ./RL-pipeline.conf
+```
+In separate terminals run elasticsearch and kibana (no arguments necessary)
+Once kibana is running import the config data by following the import instructions here: https://support.logz.io/hc/en-us/articles/210207225-How-can-I-export-import-Dashboards-Searches-and-Visualizations-from-my-own-Kibana-
+and importing the kibanaData.ndjson file
+
+In kibana open up the "RL Dash" dashboard
+Add a filter "path is [path to log file]" to filter it to a specific run of the agent
+
+
+
+
+
