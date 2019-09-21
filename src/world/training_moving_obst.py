@@ -33,25 +33,22 @@ class Moving():
                 model = rospy.wait_for_message('gazebo/model_states', ModelStates)
                 for i in range(len(model.name)):
                     # Move obstacles
-                    if model.name[i] == 'moving_obstacles_round':
-                        obstacle.model_name = 'moving_obstacles_round'
+                    if model.name[i] == 'moving_obstacles_round' or \
+                    model.name[i] == 'moving_obstacles_round_1' or \
+                    model.name[i] == 'moving_obstacles_round_2':
+                        obstacle.model_name = model.name[i]
                         obstacle.pose = model.pose[i]
                         obstacle.twist = Twist()
                         obstacle.twist.angular.z = 0.5
                         self.pub_model.publish(obstacle)
-                        # rospy.sleep must always be wrapped in try/except in case the sim resets while sleeping
-                        try:
-                            rospy.sleep(0.1)
-                        except rospy.exceptions.ROSTimeMovedBackwardsException, e:
-                            print("Ros error due to reset during sleep, disregard")
 
             # When training in the gate module
             while self.current_module == "gate":
                 gate = ModelState()
                 model = rospy.wait_for_message('gazebo/model_states', ModelStates)
                 for i in range(len(model.name)):
-                    if model.name[i] == 'gate_moving':
-                        gate.model_name = 'gate_moving'
+                    if model.name[i] == 'gate_moving' or model.name[i] == 'gate_moving_1':
+                        gate.model_name = model.name[i]
                         gate.pose = model.pose[i]
                         gate.twist = Twist()
                         gate.twist.linear.z = GATE_MOVE_SPEED * self.gate_dir
