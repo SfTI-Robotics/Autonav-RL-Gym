@@ -3,6 +3,9 @@ import torch.nn as nn
 from torch.distributions import MultivariateNormal
 import numpy as np
 from torch.distributions import Categorical
+import sys
+import os
+
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
@@ -58,7 +61,7 @@ class ActorCritic(nn.Module):
         return action_logprobs, torch.squeeze(state_value), dist_entropy
 
 class PPO:
-    def __init__(self, state_dim, action_dim, action_std, lr, betas, gamma, K_epochs,v_min, v_max, eps_clip):
+    def __init__(self, state_dim, action_dim, action_std, lr, betas, gamma, K_epochs,v_min, v_max, eps_clip, savePath):
         self.lr = lr
         self.betas = betas
         self.gamma = gamma
@@ -70,6 +73,7 @@ class PPO:
         self.policy = ActorCritic(state_dim, action_dim, action_std).to(device)
         self.optimizer = torch.optim.Adam(self.policy.parameters(), lr=lr, betas=betas)
         self.policy_old = ActorCritic(state_dim, action_dim, action_std).to(device)
+	self.savePath = savePath
         
         self.MseLoss = nn.MSELoss()
     
@@ -95,8 +99,8 @@ class PPO:
 	torch.save(self.policy_old.state_dict(), self.savePath + '/Models/ppo/' + str(episode_count) + '_policy_old.pth')
 
     def load_models(self, episode):
-	self.policy.load_state_dict(torch.load(self.savePath + '/Models/ppo/' + str(episode) + 'policy.pth'))
-	self.policy_old.load_state_dict(torch.load(self.savePath + '/Models/ppo/' + str(episode) + 'policy_old.pth'))
+	self.policy.load_state_dict(torch.load(self.savePath + '/Models/ppo/' + str(episode) + '_policy.pth'))
+	self.policy_old.load_state_dict(torch.load(self.savePath + '/Models/ppo/' + str(episode) + '_policy_old.pth'))
     
     def update(self, memory):   
         # Monte Carlo estimate of state rewards:

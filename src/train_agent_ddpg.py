@@ -324,7 +324,7 @@ if __name__ == '__main__':
             #print('state',state)
             #print('action',action)
             #print('ap',past_action)
-            next_state, reward, done = env.step(action, past_action)
+            next_state, reward, done, goal = env.step(action, past_action)
             #print('action', action,'r',reward)
             past_action = action
 
@@ -363,10 +363,12 @@ if __name__ == '__main__':
         exploration_rate = (min_exploration_rate +
                 (max_exploration_rate - min_exploration_rate)* np.exp(-exploration_decay_rate*ep))
         gc.collect()
-        if done == 1:
-            collision_count = 1
-        elif done == 2:
-            goal_count = 1
+        if done:
+		if goal:			
+                	goal_count = 1
+		else:
+			collision_count = 1
+                break
         env.logEpisode(rewards_current_episode, collision_count, goal_count, step_count)
         #print('exp:', exploration_rate)
         if ep%50 == 0:

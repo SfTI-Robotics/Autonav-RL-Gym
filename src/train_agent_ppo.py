@@ -46,8 +46,17 @@ ACTION_V_MIN = 0  # m/s
 ACTION_V_MAX = 0.4  # m/s
 
 memory = Memory()
-ppo = PPO(state_dim, action_dim, hidden_dim, lr, betas, gamma, K_epochs, ACTION_V_MIN, ACTION_V_MAX, eps_clip)
+ppo = PPO(state_dim, action_dim, hidden_dim, lr, betas, gamma, K_epochs, ACTION_V_MIN, ACTION_V_MAX, eps_clip, dirPath)
 
+
+is_training = False
+is_loading = True
+load_ep = 4500
+
+if is_loading:
+    ppo.load_models(load_ep)
+else:
+    load_ep = 0
 
 if __name__ == '__main__':
     rospy.init_node('ppo_train')
@@ -61,7 +70,7 @@ if __name__ == '__main__':
     time_step = 0
     running_reward = -1000.0
 
-    for ep in range(load_ep + 1, max_episodes, 1):
+    for ep in range(1, max_episodes):
 	done = 0
         collision_count = 0
         goal_count = 0
@@ -70,13 +79,13 @@ if __name__ == '__main__':
 	score = 0.0
         #print('Episode: ' + str(ep), 'Mem Buffer Size: ' + str(len(rollouts)))
 
-        for step in range(max_timesteps):
+        for step in range(1, max_timesteps):
 
 	    time_step += 1
             ep_steps = ep_steps + 1
             action = ppo.select_action(state, memory)
 	    #print("actual action = " + str(action))
-            state, reward, done = env.step(action, past_action)
+            state, reward, done, goal = env.step(action, past_action)
 
 	    if step == max_timesteps - 1:
 		done = True
@@ -88,17 +97,18 @@ if __name__ == '__main__':
             
             # update if its time
             if time_step % update_timestep == 0:
-                ppo.update(memory)
+		if is_training:
+                	ppo.update(memory)
                 memory.clear_memory()
                 time_step = 0
             score += reward
 	    
 
-            if done == 1:
-                collision_count = 1
-                break
-            if done == 2:
-                goal_count = 1
+            if done:
+		if goal:			
+                	goal_count = 1
+		else:
+			collision_count = 1
                 break
 
         env.logEpisode(running_reward, collision_count, goal_count, ep_steps)
@@ -108,8 +118,9 @@ if __name__ == '__main__':
         if ep % log_interval == 0:
             running_reward = int((running_reward/log_interval))
             print('Ep {}\tMoving average score: {:.2f} Ep score: {:.2f}\t'.format(ep, running_reward, score))
-	    print('Timestep {}'.format(time_step))	     
-            ppo.save_models(ep)
+	    print('Timestep {}'.format(time_step))
+	    if is_training:	     
+            	ppo.save_models(ep)
 	    
 
 	    

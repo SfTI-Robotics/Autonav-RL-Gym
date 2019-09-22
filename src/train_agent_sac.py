@@ -21,14 +21,14 @@ state_dim = 28
 hidden_dim = 256
 ACTION_V_MIN = 0  # m/s
 ACTION_W_MIN = 0  # m/s
-ACTION_V_MAX = 0.22  # m/s
-ACTION_W_MAX = 0.22  # m/s
+ACTION_V_MAX = 0.4  # m/s
+ACTION_W_MAX = 0.4  # m/s
 
 is_training = True
 is_loading = False
 load_ep = 0
 max_episodes = 10001
-max_steps = 500
+max_steps = 200
 rewards = []
 batch_size = 128
 
@@ -68,7 +68,7 @@ if __name__ == '__main__':
 
 	    action = trainer.get_action(state)
 
-            next_state, reward, done = env.step(action, past_action)
+            next_state, reward, done, goal = env.step(action, past_action)
 
 	    #print("Reward = : " + str(reward))
 	
@@ -92,12 +92,15 @@ if __name__ == '__main__':
             if (len(replay_buffer) >= 256) and is_training:
                 trainer.soft_q_update(batch_size)
             state = next_state
-            if done == 1:
-                collision_count = 1
+
+	    
+            if done:
+		if goal:			
+                	goal_count = 1
+		else:
+			collision_count = 1
                 break
-            elif done == 2:
-                goal_count = 1
-                break
+
 
 
         env.logEpisode(rewards_current_episode, collision_count, goal_count, step_count)

@@ -83,7 +83,7 @@ class Env():
         scan_range = []
         heading = self.heading
         min_range = 0.16
-        done = 0
+        done = False
 
         for i in range(len(scan.ranges)):
             if scan.ranges[i] == float('Inf'):
@@ -96,7 +96,7 @@ class Env():
 	
 	
         if min_range > min(scan_range) > 0:
-            done = 1
+            done = True
 
         for pa in past_action:
             scan_range.append(pa)
@@ -180,11 +180,13 @@ class Env():
 
         state, done = self.getState(data, past_action)
         reward = self.setReward(state, done)
+	goal = False
 	if self.get_goalbox:
-		done = 2
+		done = True
 		self.get_goalbox = False
+		goal = True
 	
-        return np.asarray(state), reward, done
+        return np.asarray(state), reward, done, goal
 
     def reset(self):
         rospy.wait_for_service('gazebo/reset_simulation')
