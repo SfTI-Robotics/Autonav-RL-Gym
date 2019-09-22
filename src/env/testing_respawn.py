@@ -21,13 +21,13 @@ class Respawn():
 
         # Tracking current module being trained in
         self.modules = [
-            module_empty()#, 
-            #module_left_right(),
-            #module_move_away(),
-            #module_round_obstacle(),
-            #module_static_obstacles(),
-            #module_moving_obstacles(),
-            #module_gate()
+            module_empty(), 
+            module_left_right(),
+            module_move_away(),
+            module_round_obstacle(),
+            module_static_obstacles(),
+            module_moving_obstacles(),
+            module_gate()
             ]
         self.module_index = -1
         self.pub_module = rospy.Publisher('current_module', String, queue_size = 1)
