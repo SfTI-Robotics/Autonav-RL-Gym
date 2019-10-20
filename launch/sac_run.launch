@@ -1,7 +1,0 @@
-<launch>
-  <arg name="stage" default="3"/>
-  <param name="stage_number"  value="$(arg stage)"/>
-  <node pkg="project" type="sac_train.py" name="sac_train" output="screen" />
-  <node pkg="project"  type="moving_obstacle.py" name="moving_obstacle" output="screen" />
-
-</launch>
