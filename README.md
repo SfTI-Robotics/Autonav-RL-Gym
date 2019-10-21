@@ -48,6 +48,11 @@ Arg 3 (optional): The number of the episode of a trained model to load. Must be 
 
 Occasionally Gazebo will error on launch, restarting usually fixes this.
 
+Example: to run the PPO algorithm in the testing environment, loading episode 6000, run the command:
+```
+$ ./launch.sh test ppo 6000
+```
+
 # Information
 
 This project was developed by Matthew Frost and Eugene Bulog, and supervised by Henry Williams, for a fourth year honors project at UoA. The goal of this project is to develop simulated training and testing environments for reinforcement learning in the area of mobile robotics autonomous navigation. Also included are two implementations of reinforcement learning algorithms. The simulated environments use the Gazebo and ROS platforms, and make use of the Turtlebot 3 robot models develepoed by Robotis. The DDPG implementation used is heavily adapted from one found at https://github.com/dranaju/project/tree/master/src. The Turtlebot 3 navigation package used to compare with our implementations was developed by Robotis.
