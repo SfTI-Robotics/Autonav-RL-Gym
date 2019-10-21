@@ -41,8 +41,12 @@ To run the project, cd into the repo root (after running the above setup), and r
 $ ./launch.sh [train/test] [ddpg/ppo/nav] [optional:episode number to load]
 ```
 Arg 1:  whether to run the training or testing environment (only designed for ppo and ddpg, not nav - turtelbot3 navigation package)
+
 Arg 2:  Which agent to run (DDPG RL algorithm, PPO RL algorithm, "nav" Turtlebot3 Navigation package)
+
 Arg 3 (optional): The number of the episode of a trained model to load. Must be present in the relevant src/saved_models folder, only supported for PPO and DDPG (as Turtlebot 3 navigation is not a learning model)
+
+Occasionally Gazebo will error on launch, restarting usually fixes this.
 
 # Information
 
