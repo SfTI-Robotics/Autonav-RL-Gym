@@ -1,7 +1,0 @@
-<launch>
-  <arg name="stage" default="3"/>
-  <param name="stage_number"  value="$(arg stage)"/>
-  <arg name="agent" default="ddpg"/>
-  <node pkg="project" type="test_agent_$(arg agent).py" name="test" output="screen"/>
-  <node pkg="project"  type="training_moving_obst.py" name="moving_obstacle" output="screen" />
-</launch>

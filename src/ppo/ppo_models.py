@@ -95,12 +95,12 @@ class PPO:
 	return self.actions[action]
 
     def save_models(self, episode_count):
- 	torch.save(self.policy.state_dict(), self.savePath + '/Models/ppo/' + str(episode_count) + '_policy.pth')
-	torch.save(self.policy_old.state_dict(), self.savePath + '/Models/ppo/' + str(episode_count) + '_policy_old.pth')
+ 	torch.save(self.policy.state_dict(), self.savePath + '/saved_models/ppo/' + str(episode_count) + '_policy.pth')
+	torch.save(self.policy_old.state_dict(), self.savePath + '/saved_models/ppo/' + str(episode_count) + '_policy_old.pth')
 
     def load_models(self, episode):
-	self.policy.load_state_dict(torch.load(self.savePath + '/Models/ppo/' + str(episode) + '_policy.pth'))
-	self.policy_old.load_state_dict(torch.load(self.savePath + '/Models/ppo/' + str(episode) + '_policy_old.pth'))
+	self.policy.load_state_dict(torch.load(self.savePath + '/saved_models/ppo/' + str(episode) + '_policy.pth'))
+	self.policy_old.load_state_dict(torch.load(self.savePath + '/saved_models/ppo/' + str(episode) + '_policy_old.pth'))
     
     def update(self, memory):   
         # Monte Carlo estimate of state rewards:

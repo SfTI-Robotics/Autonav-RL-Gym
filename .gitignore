@@ -1,4 +1,7 @@
-src/Models/*
-src/models_good
+*.pth
+*.pt
 /src/Models/
 /src/env/training_logs/*
+/src/env/testing_logs/*
+*.pyc
+

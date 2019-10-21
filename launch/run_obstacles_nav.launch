@@ -1,0 +1,5 @@
+<launch>
+	<arg name="stage" default="3"/>
+	<node pkg="project"  type="moving_obst_round_nav.py" name="moving_obstacle_round" output="screen" />
+	<node pkg="project"  type="moving_obst_gate_nav.py" name="moving_obstacle_gate" output="screen" />
+</launch>
