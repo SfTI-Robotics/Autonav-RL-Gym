@@ -46,7 +46,7 @@ To run the project, cd into the repo root (after running the above setup), and r
 $ ./launch.sh [train/test] [ddpg/ppo/nav] [optional:episode number to load]
 ```
 
-** Will start paused in Gazebo - click the play button in Gazebo at bottom left **
+**Will start paused in Gazebo - click the play button in Gazebo at bottom left**
 
 Arg 1:  whether to run the training or testing environment (only designed for ppo and ddpg, not nav - turtelbot3 navigation package)
 
