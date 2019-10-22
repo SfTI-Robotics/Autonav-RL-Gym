@@ -28,7 +28,10 @@ $ git clone https://github.com/ROBOTIS-GIT/turtlebot3.git
 $ git clone https://github.com/ROBOTIS-GIT/turtlebot3_simulations.git
 ```
 
-4.  Clone this repo into [catkin_workspace]/src (e.g. ~/catkin_ws/src)
+4.  Clone this repo to catkin_workspace
+```
+$ git clone https://github.com/UoA-RL/turtlebot3_ddpg.git
+```
 5.  Run catkin_make:
 ```
 $ cd ~/catkin_ws && catkin_make
