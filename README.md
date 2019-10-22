@@ -48,7 +48,7 @@ $ ./launch.sh [train/test] [ddpg/ppo/nav] [optional:episode number to load]
 
 **Will start paused in Gazebo - click the play button in Gazebo at bottom left**
 
-Arg 1:  whether to run the training or testing environment (only designed for ppo and ddpg, not nav - turtelbot3 navigation package)
+Arg 1:  whether to run the training or testing environment (training env is only designed for ppo and ddpg, not nav - turtlebot3 navigation package)
 
 Arg 2:  Which agent to run (DDPG RL algorithm, PPO RL algorithm, "nav" Turtlebot3 Navigation package)
 
