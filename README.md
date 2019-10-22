@@ -5,6 +5,7 @@ This project requires ROS (Kinetic release), Gazebo (Ver 7), and catkin. For bes
 1.  Create a catkin workspace:
 
 ```
+$ source /opt/ros/kinetic/setup.bash
 $ mkdir -p ~/catkin_ws/src
 $ cd ~/catkin_ws/
 $ catkin_make
