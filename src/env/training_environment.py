@@ -18,8 +18,10 @@ from math import e
 
 
 class Env():
-    def __init__(self, agent_type):
+    def __init__(self, agent_type, env_module_id=None):
         self.agent_type = agent_type
+        self.env_module_id = env_module_id  # if is none. then will randomly change between modules.
+
         self.envs_list = {}
         self.record_goals = 0
         self.sequential_goals = 0
@@ -33,16 +35,17 @@ class Env():
         self.pub_cmd_vel_r = rospy.Publisher('cmd_vel_r', Twist, queue_size=5)
         self.sub_odom = rospy.Subscriber('odom', Odometry, self.getOdometry)
         self.reset_proxy = rospy.ServiceProxy('gazebo/reset_simulation', Empty)
-        self.unpause_proxy = rospy.ServiceProxy('gazebo/unpause_physics', Empty)
+        self.unpause_proxy = rospy.ServiceProxy(
+            'gazebo/unpause_physics', Empty)
         self.pause_proxy = rospy.ServiceProxy('gazebo/pause_physics', Empty)
-        self.respawn_goal = Respawn()
+        self.respawn_goal = Respawn(-1 if env_module_id is None else env_module_id)
         self.past_distance = 0.
         self.ep_number = 0
         self.log_file = ""
-	self.step_no = 1
+        self.step_no = 1
 
         self.createLog()
-        
+
         rospy.on_shutdown(self.shutdown)
 
     def shutdown(self):
@@ -53,7 +56,8 @@ class Env():
         rospy.sleep(1)
 
     def getGoalDistace(self):
-        goal_distance = round(math.hypot(self.goal_x - self.position.x, self.goal_y - self.position.y), 2)
+        goal_distance = round(math.hypot(
+            self.goal_x - self.position.x, self.goal_y - self.position.y), 2)
         self.past_distance = goal_distance
 
         return goal_distance
@@ -61,16 +65,18 @@ class Env():
     def getOdometry(self, odom):
         self.position = odom.pose.pose.position
         orientation = odom.pose.pose.orientation
-        orientation_list = [orientation.x, orientation.y, orientation.z, orientation.w]
+        orientation_list = [orientation.x,
+            orientation.y, orientation.z, orientation.w]
         _, _, yaw = euler_from_quaternion(orientation_list)
 
-        goal_angle = math.atan2(self.goal_y - self.position.y, self.goal_x - self.position.x)
+        goal_angle = math.atan2(
+            self.goal_y - self.position.y, self.goal_x - self.position.x)
 
-        #print 'yaw', yaw
-        #print 'gA', goal_angle
+        # print 'yaw', yaw
+        # print 'gA', goal_angle
 
         heading = goal_angle - yaw
-        #print 'heading', heading
+        # print 'heading', heading
         if heading > pi:
             heading -= 2 * pi
 
@@ -84,6 +90,7 @@ class Env():
         heading = self.heading
         min_range = 0.16
         done = False
+        print(scan)
 
         for i in range(len(scan.ranges)):
             if scan.ranges[i] == float('Inf'):
@@ -92,42 +99,42 @@ class Env():
                 scan_range.append(0)
             else:
                 scan_range.append(scan.ranges[i])
-	    #print(scan_range[i])
-	
-	
+	    # print(scan_range[i])
+
         if min_range > min(scan_range) > 0:
             done = True
 
         for pa in past_action:
             scan_range.append(pa)
 
-        current_distance = round(math.hypot(self.goal_x - self.position.x, self.goal_y - self.position.y),2)
+        current_distance = round(math.hypot(
+            self.goal_x - self.position.x, self.goal_y - self.position.y), 2)
         if current_distance < 0.2:
             self.get_goalbox = True
-	#print("Heading = " + str(heading))
+            # print("Heading = " + str(heading))
         return scan_range + [heading, current_distance], done
 
     def setReward(self, state, done):
         current_distance = state[-1]
         heading = state[-2]
-	#print("dist = " + str(current_distance))
-	#print("heading = " + str(heading))
-	#print("dist = " + str(current_distance))
+        # print("dist = " + str(current_distance))
+        # print("heading = " + str(heading))
+        # print("dist = " + str(current_distance))
 
-	#print("new past  d = " + str(self.past_distance))
-	#print("new curr  d = " + str(current_distance))
-	distance_rate = (abs(self.past_distance) - abs(current_distance)) 
-	
-	if(distance_rate > 0.5):
-		distance_rate = -1
-	#print(distance_rate)
+        # print("new past  d = " + str(self.past_distance))
+        # print("new curr  d = " + str(current_distance))
+        distance_rate = (abs(self.past_distance) - abs(current_distance))
+
+        if (distance_rate > 0.5):
+            distance_rate = -1
+    	# print(distance_rate)
         if distance_rate > 0:
             reward = 200.*distance_rate
         if distance_rate <= 0:
             reward = -5.
 
-       # reward = 100/(1 + current_distance)
-	self.past_distance = current_distance
+        # reward = 100/(1 + current_distance)
+        self.past_distance = current_distance
         if done:
             rospy.loginfo("Collision!!")
             rospy.loginfo("record = " + str(self.record_goals))
@@ -148,16 +155,15 @@ class Env():
             reward = 1000.
             self.pub_cmd_vel_l.publish(Twist())
             self.pub_cmd_vel_r.publish(Twist())
-            #self.goal_x, self.goal_y = self.respawn_goal.moduleRespawns()
-            #self.goal_distance = self.getGoalDistace()
-            #self.get_goalbox = False
-	
-	#print("Reward = " + str(reward))
+            # self.goal_x, self.goal_y = self.respawn_goal.moduleRespawns()
+            # self.goal_distance = self.getGoalDistace()
+            # self.get_goalbox = False
+            # print("Reward = " + str(reward))
 
         return reward
 
     def step(self, action, past_action):
-	self.step_no += 1
+        self.step_no += 1
         wheel_vel_l = action[0]
         wheel_vel_r = action[1]
 
@@ -166,7 +172,6 @@ class Env():
 
         vel_cmd_r = Twist()
         vel_cmd_r.linear.x = wheel_vel_r
-
 
         self.pub_cmd_vel_l.publish(vel_cmd_l)
         self.pub_cmd_vel_r.publish(vel_cmd_r)
@@ -180,44 +185,46 @@ class Env():
 
         state, done = self.getState(data, past_action)
         reward = self.setReward(state, done)
-	goal = False
-	if self.get_goalbox:
-		done = True
-		self.get_goalbox = False
-		goal = True
-	
+        goal = False
+        if self.get_goalbox:
+            done = True
+            self.get_goalbox = False
+            goal = True
+
         return np.asarray(state), reward, done, goal
 
     def reset(self):
         rospy.wait_for_service('gazebo/reset_simulation')
         try:
-	    pass
+            pass
             self.reset_proxy()
         except (rospy.ServiceException) as e:
             print("gazebo/reset_simulation service call failed")
         data = None
- 
+
         while data is None:
             try:
                 data = rospy.wait_for_message('scan', LaserScan, timeout=5)
             except:
-                print "scan failed"
+                print("scan failed")
                 pass
 
-
         if self.initGoal:
-            self.goal_x, self.goal_y = self.respawn_goal.moduleRespawns(True)
+            self.goal_x, self.goal_y = self.respawn_goal.moduleRespawns(self.env_module_id is None)
             self.initGoal = False
         else:
-            self.goal_x, self.goal_y = self.respawn_goal.moduleRespawns(self.step_no >= 200)
-	
-	if(self.step_no >= 200):
-		self.step_no = 1
-        self.goal_distance = self.getGoalDistace()
+            self.goal_x, self.goal_y = self.respawn_goal.moduleRespawns(
+                (self.step_no >= 200) and (self.env_module_id is None))
+
+        print('Environment: {}'.format(self.respawn_goal.currentModuleName()))
+
+        if(self.step_no >= 200):
+            self.step_no = 1
+            self.goal_distance = self.getGoalDistace()
         state, done = self.getState(data, [0.,0.])
-	self.past_distance = state[-1]
-	#print("resetted")
-	#print("past d = " + str(self.past_distance))
+        self.past_distance = state[-1]
+        # print("resetted")
+        # print("past d = " + str(self.past_distance))
 
         return np.asarray(state)
 
@@ -250,5 +257,3 @@ class Env():
 
         logfile = open(self.log_file, "a")
         logfile.close
-
-        

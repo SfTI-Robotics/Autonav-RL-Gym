@@ -57,22 +57,22 @@ def fanin_init(size, fanin=None):
 class Critic(nn.Module):
     def __init__(self, state_dim, action_dim):
         super(Critic, self).__init__()
-        
+
         self.state_dim = state_dim = state_dim
         self.action_dim = action_dim
-        
+
         self.fc1 = nn.Linear(state_dim, 32)
         self.fc1.weight.data = fanin_init(self.fc1.weight.data.size())
-        
+
         self.fa1 = nn.Linear(action_dim, 32)
         self.fa1.weight.data = fanin_init(self.fa1.weight.data.size())
-        
+
         self.fca1 = nn.Linear(64, 64)
         self.fca1.weight.data = fanin_init(self.fca1.weight.data.size())
-        
+
         self.fca2 = nn.Linear(64, 1)
         self.fca2.weight.data.uniform_(-EPS, EPS)
-        
+
     def forward(self, state, action):
         xs = torch.relu(self.fc1(state))
         xa = torch.relu(self.fa1(action))
@@ -89,16 +89,16 @@ class Actor(nn.Module):
         self.action_dim = action_dim
         self.action_limit_v = action_limit_v
         self.action_limit_w = action_limit_w
-        
+
         self.fa1 = nn.Linear(state_dim, 64)
         self.fa1.weight.data = fanin_init(self.fa1.weight.data.size())
-        
+
         self.fa2 = nn.Linear(64, 64)
         self.fa2.weight.data = fanin_init(self.fa2.weight.data.size())
-        
+
         self.fa3 = nn.Linear(64, action_dim)
         self.fa3.weight.data.uniform_(-EPS,EPS)
-        
+
     def forward(self, state):
         x = torch.relu(self.fa1(state))
         x = torch.relu(self.fa2(x))
@@ -111,31 +111,31 @@ class Actor(nn.Module):
             action[:,1] = torch.sigmoid(action[:,1])*self.action_limit_w
         return action
 
-    
+
 class MemoryBuffer:
     def __init__(self, size):
         self.buffer = deque(maxlen=size)
         self.maxSize = size
         self.len = 0
-        
+
     def sample(self, count):
         batch = []
         count = min(count, self.len)
         batch = random.sample(self.buffer, count)
-        
+
         s_array = np.float32([array[0] for array in batch])
         a_array = np.float32([array[1] for array in batch])
         r_array = np.float32([array[2] for array in batch])
         new_s_array = np.float32([array[3] for array in batch])
-        
+
         return s_array, a_array, r_array, new_s_array
-    
+
     def len(self):
         return self.len
-    
+
     def add(self, s, a, r, new_s):
         transition = (s, a, r, new_s)
-        self.len += 1 
+        self.len += 1
         if self.len > self.maxSize:
             self.len = self.maxSize
         self.buffer.append(transition)
@@ -145,9 +145,9 @@ ram = MemoryBuffer(MAX_BUFFER)
 
 
 class Trainer:
-    
+
     def __init__(self, state_dim, action_dim, action_limit_v, action_limit_w, ram):
-        
+
         self.state_dim = state_dim
         self.action_dim = action_dim
         self.action_limit_v = action_limit_v
@@ -155,26 +155,26 @@ class Trainer:
         #print('w',self.action_limit_w)
         self.ram = ram
         #self.iter = 0
-        
+
         self.actor = Actor(self.state_dim, self.action_dim, self.action_limit_v, self.action_limit_w)
         self.target_actor = Actor(self.state_dim, self.action_dim, self.action_limit_v, self.action_limit_w)
         self.actor_optimizer = torch.optim.Adam(self.actor.parameters(), LEARNING_RATE)
-        
+
         self.critic = Critic(self.state_dim, self.action_dim)
         self.target_critic = Critic(self.state_dim, self.action_dim)
         self.critic_optimizer = torch.optim.Adam(self.critic.parameters(), LEARNING_RATE)
         self.pub_qvalue = rospy.Publisher('qvalue', Float32, queue_size=5)
         self.qvalue = Float32()
-        
+
         hard_update(self.target_actor, self.actor)
         hard_update(self.target_critic, self.critic)
-        
+
     def get_exploitation_action(self,state):
         state = torch.from_numpy(state)
         action = self.target_actor.forward(state).detach()
         #print('actionploi', action)
         return action.data.numpy()
-        
+
     def get_exploration_action(self, state):
         state = torch.from_numpy(state)
         action = self.actor.forward(state).detach()
@@ -186,17 +186,17 @@ class Trainer:
         new_action = action.data.numpy() #+ noise
         #print('action_no', new_action)
         return new_action
-    
+
     def optimizer(self):
         s_sample, a_sample, r_sample, new_s_sample = ram.sample(BATCH_SIZE)
-        
+
         s_sample = torch.from_numpy(s_sample)
         a_sample = torch.from_numpy(a_sample)
         r_sample = torch.from_numpy(r_sample)
         new_s_sample = torch.from_numpy(new_s_sample)
-        
+
         #-------------- optimize critic
-        
+
         a_target = self.target_actor.forward(new_s_sample).detach()
         next_value = torch.squeeze(self.target_critic.forward(new_s_sample, a_target).detach())
         # y_exp = r _ gamma*Q'(s', P'(s'))
@@ -209,27 +209,27 @@ class Trainer:
         #print(self.qvalue, torch.max(self.qvalue))
         #----------------------------
         loss_critic = F.smooth_l1_loss(y_predicted, y_expected)
-        
+
         self.critic_optimizer.zero_grad()
         loss_critic.backward()
         self.critic_optimizer.step()
-        
+
         #------------ optimize actor
         pred_a_sample = self.actor.forward(s_sample)
         loss_actor = -1*torch.sum(self.critic.forward(s_sample, pred_a_sample))
-        
+
         self.actor_optimizer.zero_grad()
         loss_actor.backward()
         self.actor_optimizer.step()
-        
+
         soft_update(self.target_actor, self.actor, TAU)
         soft_update(self.target_critic, self.critic, TAU)
-    
+
     def save_models(self, episode_count):
         torch.save(self.target_actor.state_dict(), dirPath +'/saved_models/ddpg/'+str(episode_count)+ '_actor.pt')
         torch.save(self.target_critic.state_dict(), dirPath + '/saved_models/ddpg/'+str(episode_count)+ '_critic.pt')
         print('****Models saved***')
-        
+
     def load_models(self, episode):
         self.actor.load_state_dict(torch.load(dirPath + '/saved_models/ddpg/'+str(episode)+ '_actor.pt'))
         self.critic.load_state_dict(torch.load(dirPath + '/saved_models/ddpg/'+str(episode)+ '_critic.pt'))

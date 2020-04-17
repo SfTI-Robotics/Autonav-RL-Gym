@@ -11,7 +11,7 @@ from std_msgs.msg import String
 from geometry_msgs.msg import Pose
 from std_srvs.srv import Empty
 from gazebo_msgs.srv import SetModelState
-from gazebo_msgs.msg import ModelState 
+from gazebo_msgs.msg import ModelState
 from testing_respawn_coords import *
 from tf.transformations import quaternion_from_euler
 
@@ -21,7 +21,7 @@ class Respawn():
 
         # Tracking current module being trained in
         self.modules = [
-            module_empty(), 
+            module_empty(),
             module_left_right(),
             module_move_away(),
             module_round_obstacle(),
@@ -34,8 +34,9 @@ class Respawn():
 
         # Get goal box model
         self.modelPath = os.path.dirname(os.path.realpath(__file__))
-        self.modelPath = self.modelPath.replace('turtlebot3_ddpg/src/env',
+        self.modelPath = self.modelPath.replace('Autonav-RL-Gym/src/env',
                                                 'turtlebot3_simulations/turtlebot3_gazebo/models/turtlebot3_square/goal_box/model.sdf')
+        # self.modelPath = '/home/act65/catkin_ws/src/turtlebot3_simulations/turtlebot3_gazebo/models/turtlebot3_square/goal_box/model.sdf'
         self.f = open(self.modelPath, 'r')
         self.model = self.f.read()
 
@@ -108,7 +109,7 @@ class Respawn():
         print("track repositioned")
 
     # Move the goal to its new position
-    def repositionGoal(self):  
+    def repositionGoal(self):
 
         self.goal_position.position.x, self.goal_position.position.y = self.modules[self.module_index].genGoalPos()
 
@@ -131,7 +132,7 @@ class Respawn():
 
     # Set the state to the next module to train in
     def nextModule(self):
-        
+
         self.module_index = self.module_index + 1
         if (self.module_index >= len(self.modules)):
             self.pause_proxy()
