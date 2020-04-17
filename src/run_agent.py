@@ -20,6 +20,11 @@ from env.testing_environment import Env as test_env
 from ppo_alg import PPO_agent
 from ddpg_alg import DDPG_agent
 
+# sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
+# dirPath = os.path.dirname(os.path.realpath(__file__))
+env_module_id = 2
+dirPath = '/tmp/env-{}/'.format(env_module_id)
+
 MAX_STEPS = 500
 MAX_EPISODES = 10001
 
@@ -44,11 +49,11 @@ if __name__ == '__main__':
 
     # arg 2, agent PPO, DDPG, initialize Env(PPO) etc
     if (sys.argv[2] == "ppo"):
-        env = Env("PPO")
-        agent = PPO_agent(load_ep, env, MAX_STEPS)
+        env = Env("PPO", env_module_id)
+        agent = PPO_agent(load_ep, env, MAX_STEPS, dirPath)
     elif (sys.argv[2] == "ddpg"):
-        env = Env("DDPG")
-        agent = DDPG_agent(load_ep, env, MAX_STEPS)
+        env = Env("DDPG", env_module_id)
+        agent = DDPG_agent(load_ep, env, MAX_STEPS, dirPath)
 
 
     for ep in range(load_ep, MAX_EPISODES, 1):
@@ -64,7 +69,7 @@ if __name__ == '__main__':
             running_reward += reward
             if (collision or goal or step == MAX_STEPS - 1):
                 break
-        
+
         env.logEpisode(running_reward, collision, goal, ep_steps)
         print("Episode " + str(ep))
 

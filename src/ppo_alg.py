@@ -14,11 +14,6 @@ from ppo.ppo_models import PPO
 
 import torch
 
-#---Directory Path---#
-sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
-dirPath = os.path.dirname(os.path.realpath(__file__))
-
-
 # hyperparams
 update_timestep = 500      # update policy every n timesteps
 hidden_dim = 256            # constant std for action distribution (Multivariate Normal)
@@ -37,39 +32,41 @@ action_dim = 4
 ACTION_V_MIN = 0  # m/s
 ACTION_V_MAX = 0.4  # m/s
 
-memory = Memory()
-ppo = PPO(state_dim, action_dim, hidden_dim, lr, betas, gamma, K_epochs, ACTION_V_MIN, ACTION_V_MAX, eps_clip, dirPath)
-
 class PPO_agent:
-    
-    def __init__(self, load_ep, env, max_timesteps):
+
+    def __init__(self, load_ep, env, max_timesteps, dirPath):
         self.env = env
         self.time_step = 0
         self.past_action = np.array([0., 0.])
         self.max_timesteps = max_timesteps
 
-        
+        self.memory = Memory()
+        self.ppo = PPO(
+                state_dim, action_dim, hidden_dim, lr, betas, gamma, K_epochs,
+                ACTION_V_MIN, ACTION_V_MAX, eps_clip, dirPath
+                )
+
         if (load_ep > 0):
-            ppo.load_models(load_ep)
+            self.ppo.load_models(load_ep)
 
 
     # called every step
     def step(self, state, ep):
 
         self.time_step += 1
-        action = ppo.select_action(state, memory)
+        action = self.ppo.select_action(state, self.memory)
         state, reward, collision, goal = self.env.step(action, self.past_action)
 
         self.past_action = action
-        memory.rewards.append(reward)
-        memory.masks.append(float(collision or self.time_step == self.max_timesteps - 1))
+        self.memory.rewards.append(reward)
+        self.memory.masks.append(float(collision or self.time_step == self.max_timesteps - 1))
 
         if (self.time_step % update_timestep == 0):
-            ppo.update(memory)
-            memory.clear_memory()
+            self.ppo.update(self.memory)
+            self.memory.clear_memory()
             self.time_step = 0
 
         return state, reward, collision, goal
 
     def save(self, ep):
-        ppo.save_models(ep)
+        self.ppo.save_models(ep)

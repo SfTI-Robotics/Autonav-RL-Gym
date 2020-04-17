@@ -15,7 +15,7 @@ $ catkin_make
 2.  Install the required ROBOTIS Turtlebot 3 packages:
 
 ```
-$ sudo apt-get install ros-kinetic-joy ros-kinetic-teleop-twist-joy ros-kinetic-teleop-twist-keyboard ros-kinetic-laser-proc ros-kinetic-rgbd-launch ros-kinetic-depthimage-to-laserscan ros-kinetic-rosserial-arduino ros-kinetic-rosserial-python ros-kinetic-rosserial-server ros-kinetic-rosserial-client ros-kinetic-rosserial-msgs ros-kinetic-amcl ros-kinetic-map-server ros-kinetic-move-base ros-kinetic-urdf ros-kinetic-xacro ros-kinetic-compressed-image-transport ros-kinetic-rqt-image-view ros-kinetic-gmapping ros-kinetic-navigation ros-kinetic-interactive-markers
+$ sudo apt-get install ros-kinetic-joy ros-kinetic-teleop-twist-joy ros-kinetic-teleop-twist-keyboard ros-kinetic-laser-proc ros-kinetic-rgbd-launch ros-kinetic-depthimage-to-laserscan ros-kinetic-rosserial-arduino ros-kinetic-rosserial-python ros-kinetic-rosserial-server ros-kinetic-rosserial-client ros-kinetic-rosserial-msgs ros-kinetic-amcl ros-kinetic-map-server ros-kinetic-move-base ros-kinetic-urdf ros-kinetic-xacro ros-kinetic-compressed-image-transport ros-kinetic-rqt-image-view ros-kinetic-gmapping ros-kinetic-navigation ros-kinetic-interactive-markers ros-kinetic-ros-control ros-kinetic-ros-controllers
 ```
 
 (Taken from http://emanual.robotis.com/docs/en/platform/turtlebot3/pc_setup/#install-ubuntu-on-remote-pc)
@@ -31,12 +31,20 @@ $ git clone https://github.com/ros-simulation/gazebo_ros_pkgs.git
 
 4.  Clone this repo to catkin_workspace
 ```
-$ git clone https://github.com/UoA-RL/turtlebot3_ddpg.git
+$ git clone https://github.com/SfTI-Robotics/Autonav-RL-Gym.git
 ```
 5.  Run catkin_make:
 ```
 $ cd ~/catkin_ws && catkin_make
 ```
+
+6. Install the required python packages
+
+```
+pip install rospkg
+
+```
+For instructions on installing torch see here: https://pytorch.org/
 
 # Running
 
@@ -64,7 +72,3 @@ $ ./launch.sh test ppo 6000
 # Information
 
 This project was developed by Matthew Frost and Eugene Bulog, and supervised by Henry Williams, for a fourth year honors project at UoA. The goal of this project is to develop simulated training and testing environments for reinforcement learning in the area of mobile robotics autonomous navigation. Also included are two implementations of reinforcement learning algorithms. The simulated environments use the Gazebo and ROS platforms, and make use of the Turtlebot 3 robot models develepoed by Robotis. The DDPG implementation used is heavily adapted from one found at https://github.com/dranaju/project/tree/master/src. The Turtlebot 3 navigation package used to compare with our implementations was developed by Robotis.
-
-
-
-

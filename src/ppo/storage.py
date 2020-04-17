@@ -7,11 +7,11 @@ class Memory:
         self.states = []
         self.logprobs = []
         self.rewards = []
-	self.masks = []
-    
+        self.masks = []
+
     def clear_memory(self):
         del self.actions[:]
         del self.states[:]
         del self.logprobs[:]
         del self.rewards[:]
-	del self.masks[:]
+        del self.masks[:]
